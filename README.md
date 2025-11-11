@@ -24,14 +24,14 @@ pip install uv
 Run directly from this repository:
 
 ```bash
-uvx https://raw.githubusercontent.com/YOUR_USERNAME/YOUR_REPO/main/wi_sales_downloader.py
+uvx https://raw.githubusercontent.com/bnoffke/wi-real-estate-transactions-downloader/main/wi_sales_downloader.py
 ```
 
 Or download and run locally:
 
 ```bash
 # Download the script
-curl -O https://raw.githubusercontent.com/YOUR_USERNAME/YOUR_REPO/main/wi_sales_downloader.py
+curl -O https://raw.githubusercontent.com/bnoffke/wi-real-estate-transactions-downloader/main/wi_sales_downloader.py
 
 # Run it
 uvx wi_sales_downloader.py
