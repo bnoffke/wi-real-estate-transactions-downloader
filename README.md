@@ -24,7 +24,7 @@ pip install uv
 Run directly from this repository:
 
 ```bash
-uvx https://raw.githubusercontent.com/bnoffke/wi-real-estate-transactions-downloader/main/wi_sales_downloader.py
+uv run https://raw.githubusercontent.com/bnoffke/wi-real-estate-transactions-downloader/main/wi_sales_downloader.py
 ```
 
 Or download and run locally:
@@ -34,23 +34,23 @@ Or download and run locally:
 curl -O https://raw.githubusercontent.com/bnoffke/wi-real-estate-transactions-downloader/main/wi_sales_downloader.py
 
 # Run it
-uvx wi_sales_downloader.py
+uv run wi_sales_downloader.py
 ```
 
 ## Options
 
 ```bash
 # Download to default location (~/data/wi-sales/)
-uvx wi_sales_downloader.py
+uv run wi_sales_downloader.py
 
 # Specify custom directory
-uvx wi_sales_downloader.py --path /path/to/save
+uv run wi_sales_downloader.py --path /path/to/save
 
 # Start from a different date (default: 2020-01)
-uvx wi_sales_downloader.py --start-date 2018-01
+uv run wi_sales_downloader.py --start-date 2018-01
 
 # Combine options
-uvx wi_sales_downloader.py --path ./data --start-date 2019-06
+uv run wi_sales_downloader.py --path ./data --start-date 2019-06
 ```
 
 ## What it does
