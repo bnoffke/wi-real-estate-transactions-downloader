@@ -80,17 +80,37 @@ def download_and_extract(url, target_path, filename):
         response.raise_for_status()
         
         # Extract CSV from ZIP in memory
-        with zipfile.ZipFile(BytesIO(response.content)) as zip_file:
-            csv_filename = filename.replace(".zip", ".csv")
-            zip_file.extract(csv_filename, target_path)
+        csv_filename = filename.replace(".zip", ".csv")
+        csv_path = target_path / csv_filename
         
-        print(f"✓ Saved {csv_filename}")
-        return True
+        with zipfile.ZipFile(BytesIO(response.content)) as zip_file:
+            # Extract to temporary location
+            csv_content = zip_file.read(csv_filename)
+        
+        # Convert to UTF-8
+        # Try common encodings in order of likelihood
+        for encoding in ['utf-8', 'cp1252', 'latin-1']:
+            try:
+                text = csv_content.decode(encoding)
+                # Write as UTF-8
+                csv_path.write_text(text, encoding='utf-8')
+                print(f"✓ Saved {csv_filename} (converted from {encoding} to UTF-8)")
+                return True
+            except (UnicodeDecodeError, UnicodeError):
+                if encoding == 'latin-1':
+                    # latin-1 should never fail, so if we're here something is very wrong
+                    raise
+                continue
+        
+        return False
     except requests.RequestException as e:
         print(f"✗ Failed to download {filename}: {e}")
         return False
     except zipfile.BadZipFile:
         print(f"✗ Invalid ZIP file: {filename}")
+        return False
+    except Exception as e:
+        print(f"✗ Failed to process {filename}: {e}")
         return False
 
 
