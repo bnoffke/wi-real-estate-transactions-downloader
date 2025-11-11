@@ -114,6 +114,40 @@ def download_and_extract(url, target_path, filename):
         return False
 
 
+def download_csv_direct(url, target_path, filename):
+    """Download CSV file directly (not from ZIP) and convert to UTF-8."""
+    try:
+        print(f"Downloading {filename}...")
+        response = requests.get(url, timeout=30)
+        response.raise_for_status()
+        
+        csv_content = response.content
+        csv_path = target_path / filename
+        
+        # Convert to UTF-8
+        # Try common encodings in order of likelihood
+        for encoding in ['utf-8', 'cp1252', 'latin-1']:
+            try:
+                text = csv_content.decode(encoding)
+                # Write as UTF-8
+                csv_path.write_text(text, encoding='utf-8')
+                print(f"✓ Saved {filename} (converted from {encoding} to UTF-8)")
+                return True
+            except (UnicodeDecodeError, UnicodeError):
+                if encoding == 'latin-1':
+                    # latin-1 should never fail, so if we're here something is very wrong
+                    raise
+                continue
+        
+        return False
+    except requests.RequestException as e:
+        print(f"✗ Failed to download {filename}: {e}")
+        return False
+    except Exception as e:
+        print(f"✗ Failed to process {filename}: {e}")
+        return False
+
+
 def main():
     args = parse_args()
     
@@ -142,24 +176,32 @@ def main():
             skipped += 1
             continue
         
-        # Check if ZIP exists on server
-        url = f"{BASE_URL}/{filename}.zip"
+        # First, check if ZIP exists on server
+        zip_url = f"{BASE_URL}/{filename}.zip"
+        csv_url = f"{BASE_URL}/{csv_name}"
         
-        if not file_exists(url):
+        if file_exists(zip_url):
+            # Reset consecutive 404 counter if we found a file
+            consecutive_404s = 0
+            
+            # Download and extract ZIP
+            if download_and_extract(zip_url, args.path, f"{filename}.zip"):
+                downloaded += 1
+        elif file_exists(csv_url):
+            # Reset consecutive 404 counter if we found a file
+            consecutive_404s = 0
+            
+            # Download CSV directly
+            if download_csv_direct(csv_url, args.path, csv_name):
+                downloaded += 1
+        else:
+            # Neither ZIP nor CSV found
             consecutive_404s += 1
-            print(f"⊘ {filename}.zip not found")
+            print(f"⊘ {filename} not found (tried .zip and .csv)")
             
             if consecutive_404s >= max_consecutive_404s:
                 print(f"\nStopping after {max_consecutive_404s} consecutive missing files.")
                 break
-            continue
-        
-        # Reset consecutive 404 counter if we found a file
-        consecutive_404s = 0
-        
-        # Download and extract
-        if download_and_extract(url, args.path, f"{filename}.zip"):
-            downloaded += 1
     
     print()
     print(f"Summary: {downloaded} downloaded, {skipped} skipped")
